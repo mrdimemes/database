@@ -2,24 +2,21 @@
 Simple self-made database to track the time spent on self-education. Writed in python 3.8.
 
 ----------------
-#Functional:
-Time counting;
-Storage and processing of time and task data;
-Data visualization.
-----------------
-
+# Functional
+Time counting
+Storage and processing of time and task data
+Data visualization
 
 ----------------
-#Need libraries:
-----------------
-datetime; 
-logging;
-math;
-re;
-random;
-matplotlib;
-numpy;
-pandas.
+# Need libraries
+datetime
+logging
+math
+re
+random
+matplotlib
+numpy
+pandas
 
 ----------------
 Data stored in .csv-files and processing using pandas by 4 classes:
