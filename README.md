@@ -3,27 +3,27 @@ Simple self-made database to track the time spent on self-education. Writed in p
 
 ----------------
 # Functional
-Time counting
-Storage and processing of time and task data
-Data visualization
+Time counting;  
+Storage and processing of time and task data;  
+Data visualization.
 
 ----------------
 # Need libraries
-datetime
-logging
-math
-re
-random
-matplotlib
-numpy
-pandas
+datetime  
+logging  
+math  
+re  
+random  
+matplotlib  
+numpy  
+pandas  
 
 ----------------
-Data stored in .csv-files and processing using pandas by 4 classes:
-DataBase from run_database.py;
-DataProcessor from data_processor.py;
-TimeCounter from time_counter.py;
-Visualizer from visualizer.py.
+Data stored in .csv-files and processing using pandas by 4 classes:  
+DataBase from run_database.py;  
+DataProcessor from data_processor.py;  
+TimeCounter from time_counter.py;  
+Visualizer from visualizer.py.  
 
 Main class is DataBase, other classes are impurity. These classes do not work on their own.
 
@@ -36,7 +36,6 @@ Codes have the form "X_Y_X", where X, Y and Z defines the «path» to the corres
 Column "priority" in codes.csv determines the importance of task for user (for recommendation).
 
 File time.csv contain information about user activity in its rows.
-
 
 Run run_database.py to get started (thx cap). All files must be in one dir.
 Csv alreary have some data for clarity. You can clear it (except column names).
