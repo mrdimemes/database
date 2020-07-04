@@ -48,7 +48,7 @@ class DataBase(TimeCounter, DataProcessor, Visualizer):
                     '/scplot (/scp)': 'Draw scatterplot. ' + \
                         'Syntax like /lineplot without {smooth_flag}',
                     '/sumhourshist (/shh)': 'Draw histogramm of summary hours',
-                    '/derdayhist (/dph)': 'Draw histogramm of hours per day',
+                    '/derdayhist (/pdh)': 'Draw histogramm of hours per day',
                     '/worksessionhist (/wsh)': 'Draw work session time histogramm'}
     
     def __init__(self, rp=2, path=''):
@@ -312,6 +312,8 @@ class DataBase(TimeCounter, DataProcessor, Visualizer):
                 self.cmd_perdayhourshist()
             elif command in ('/worksessionhist', '/wsh'):
                 self.cmd_worksessionhist(full_input)
+            elif command in ('/scplot', '/scp'):
+                self.cmd_scplot(full_input)
             elif command == '/week':
                 self.cmd_week()
             elif command == '/exit':
