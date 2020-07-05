@@ -26,6 +26,9 @@ class DataBase(TimeCounter, DataProcessor, Visualizer):
                    '/check (/c)': 'check current working hours',
                    '/exit': 'break the main function',
                    '/recommend (/r)': 'make recommendation for work',
+                   '/mean': 'get mean value of work time.\n' + \
+                        '    syntax: /mean [{period}]\n' + \
+                        '    period: full, year, month, week',
                    '/drop': 'drop last row from selected DataFrame'+ \
                         '(time_df (by defoult) or codes_df).\n' + \
                         '    syntax: /drop [{df_name}]',
@@ -263,6 +266,24 @@ class DataBase(TimeCounter, DataProcessor, Visualizer):
         time, days = self.this_week(series)
         print("It's [{}] hours by {} days!".format(time, days))
         self.upd_log('Week request: {} h by {} d'.format(time, days))
+
+    def cmd_mean(self, full_input):
+        try:
+            self.load_data(preprocessing=True)
+            if len(full_input) != 1:
+                period = full_input[1]
+                value = self.get_mean_time(period)
+            else:
+                value = self.get_mean_time()
+                period = 'full period'
+            value = round(value, 2)
+            self.close_data()
+            print('Mean time for {} is [{}]'.format(period, value))
+            self.upd_log('Mean time request: {} - {}'.format(period,
+                                                             value))
+        except ValueError:
+            print('Incorrect input!',
+                  'Use /mean [{period}]')
         
     def input_processing(self):
         print('DataBase is running. Use /help to see available commands')
@@ -316,6 +337,8 @@ class DataBase(TimeCounter, DataProcessor, Visualizer):
                 self.cmd_scplot(full_input)
             elif command == '/week':
                 self.cmd_week()
+            elif command == '/mean':
+                self.cmd_mean(full_input)
             elif command == '/exit':
                 break
             else:

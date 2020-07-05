@@ -93,7 +93,31 @@ class DataProcessor():
                 
         else:
             raise ValueError
-            
+
+    def get_mean_time(self, period='full'):
+        '''
+        Return mean hours value.
+        period: str (values: "full", "year", "month", "week")
+        time interval of plot. Incorrect input raise ValueError;
+
+        Need preprocessed self.time_df in call moment!
+        '''
+        if period == 'full':
+            date = self.time_df.total.index[0].strftime('%Y-%m-%d')
+        elif period == 'year':
+            date = (dt.datetime.today() - 
+                    dt.timedelta(days=365)).strftime('%Y-%m-%d')
+        elif period == 'month':
+            date = (dt.datetime.today() - 
+                    dt.timedelta(days=30)).strftime('%Y-%m-%d')
+        elif period == 'week':
+            date = (dt.datetime.today() - 
+                    dt.timedelta(days=7)).strftime('%Y-%m-%d')
+        else:
+            raise ValueError
+        series = self.time_df.total[date:]
+        return series.mean()
+        
     def get_task_time_series(self, code):
         '''
         Search rows in self.time_df by code.
