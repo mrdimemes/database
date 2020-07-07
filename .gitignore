@@ -1,4 +1,3 @@
 *.log
+*.csv
 /__pycache__
-codes.csv
-time.csv
