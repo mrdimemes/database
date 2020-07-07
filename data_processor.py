@@ -318,8 +318,9 @@ class DataProcessor():
             else:
                 weighted_time.append(time)
                 tasks = last_row.tasks + ' ' + code
-            total = sum(weighted_time)
-            ratios = ' '.join([str(round(time/total, 2)) for
+            total = round(sum(weighted_time), self.roundPlaces)
+            ratios = ' '.join([str(round(time/total,
+                                         self.roundPlaces)) for
                                time in weighted_time])
             self.drop_last_row(df='time_df')
 
