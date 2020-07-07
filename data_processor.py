@@ -21,6 +21,7 @@ class DataProcessor():
         self.codes_df = pd.read_csv(self.path + 'codes.csv')
         if preprocessing:
             self.time_df_preprocessing(direction='forward')
+
         
     def save_data(self, preprocessing=True):
         '''
@@ -34,15 +35,17 @@ class DataProcessor():
             self.time_df.to_csv(self.path + 'time.csv', index=False)
         self.codes_df.to_csv(self.path + 'codes.csv', index=False)
         self.close_data()
+
         
     def close_data(self):
         del self.time_df
         del self.codes_df
+
         
     def time_df_preprocessing(self, direction):
         '''
         If direction is "forward":
-        Set date column of of self.time pandas.DataFrame as
+        Set date column of self.time pandas.DataFrame as
         datetime index;
         Fill missing days of self.time_df;
         Convert self.time_df columns elements from strings 
@@ -59,7 +62,8 @@ class DataProcessor():
             self.time_df = self.time_df.set_index('date')
             self.time_df = self.time_df.asfreq('1d').fillna(
                 value={'tasks':'0', 'ratios':'1.0', 'total':0})
-            
+
+            #tasks column to tuples
             column_list = []
 
             for string in self.time_df.tasks:
@@ -67,6 +71,8 @@ class DataProcessor():
                 column_list.append(tuple_of_codes)
 
             self.time_df.tasks = column_list
+
+            #ratios column to tuples
             column_list = []
 
             for string in self.time_df.ratios:
@@ -76,6 +82,8 @@ class DataProcessor():
             self.time_df.ratios = column_list
             
         elif direction == 'backward':
+            
+            #tasks column to strings
             column_list = []
 
             for tuple_of_codes in self.time_df.tasks:
@@ -83,6 +91,8 @@ class DataProcessor():
                 column_list.append(string)
 
             self.time_df.tasks = column_list
+
+            #ratios column to strings
             column_list = []
 
             for tuple_of_ratios in self.time_df.ratios:
@@ -94,11 +104,13 @@ class DataProcessor():
         else:
             raise ValueError
 
+
     def get_mean_time(self, period='full'):
         '''
-        Return mean hours value.
+        Return mean value of self.time_df.total.
+
         period: str (values: "full", "year", "month", "week")
-        time interval of plot. Incorrect input raise ValueError;
+        time interval of calculation. Incorrect input raise ValueError;
 
         Need preprocessed self.time_df in call moment!
         '''
@@ -115,12 +127,17 @@ class DataProcessor():
                     dt.timedelta(days=7)).strftime('%Y-%m-%d')
         else:
             raise ValueError
+        
         series = self.time_df.total[date:]
         return series.mean()
+
         
     def get_task_time_series(self, code):
         '''
         Search rows in self.time_df by code.
+        
+        time_df must be preprocessed.
+        
         Return pandas.Series of weighted task 
         time values with this code.
         Series have datetime index.
@@ -136,6 +153,7 @@ class DataProcessor():
         task_df.insert(loc=0, column='time', value=time_list)
         return task_df.time
 
+
     @staticmethod
     def get_subcodes(code, codes, with_self=True):
         '''
@@ -146,11 +164,12 @@ class DataProcessor():
             return [i for i in codes if re.match(code, i)]
         return [i for i in codes if re.match(code+'_', i)]
 
-    def get_end_codes(self, codes):
+    def get_end_codes(self):
         '''Return bool list of end values of codes tree'''
         return [len(self.get_subcodes(i, self.summary_df.code,
                                       with_self=False))==0
                 for i in self.summary_df.code]
+
     
     @staticmethod
     def get_rang(time_series, weight=1):
@@ -163,6 +182,7 @@ class DataProcessor():
         ans = (10 - np.log(time_series))*1.5*weight
         ans[ans < 0] = 0
         return ans
+
     
     def set_summary_df(self):
         '''
@@ -172,6 +192,7 @@ class DataProcessor():
         '''
         self.summary_df = self.codes_df.copy()
 
+        #calculation of "self_time", "self_days" columns
         time_list, days_list = [], []
 
         for code in self.summary_df.code:
@@ -179,9 +200,12 @@ class DataProcessor():
             time_list.append(time_series.sum())
             days_list.append(time_series.count())
 
-        self.summary_df['self_time'] = time_list
-        self.summary_df['self_days'] = days_list
+        self.summary_df['self_time'] = np.round(time_list,
+                                                self.roundPlaces)
+        self.summary_df['self_days'] = np.round(days_list,
+                                                self.roundPlaces)
 
+        #calculation of "total_time", "total_days" columns
         time_list, days_list = [], []
 
         for code in self.summary_df.code:
@@ -193,13 +217,18 @@ class DataProcessor():
             time_list.append(total_time)
             days_list.append(total_days)
 
-        self.summary_df['total_time'] = time_list
-        self.summary_df['total_days'] = days_list
+        self.summary_df['total_time'] = np.round(time_list,
+                                                 self.roundPlaces)
+        self.summary_df['total_days'] = np.round(days_list,
+                                                 self.roundPlaces)
 
-        self.summary_df['per_day'] = self.summary_df.total_time / \
-            self.summary_df.total_days
-        self.summary_df['rang'] = self.get_rang(
-            self.summary_df.total_time, self.summary_df.priority)
+        #calculation of "per_day", "rang" columns
+        per_day = self.summary_df.total_time / self.summary_df.total_days
+        rang = self.get_rang(self.summary_df.total_time,
+                             self.summary_df.priority)
+        self.summary_df['per_day'] = np.round(per_day, self.roundPlaces)
+        self.summary_df['rang'] = np.round(rang, self.roundPlaces)
+
         
     def get_code_by_name(self, name):
         '''Search code of task by name. Return code or None.
@@ -209,6 +238,7 @@ class DataProcessor():
             return ans.values[0]
         return None
 
+
     def get_name_by_code(self, code):
         '''Search name of task by code. Return name or None.
         code is str'''
@@ -216,6 +246,7 @@ class DataProcessor():
         if ans.count():
             return ans.values[0]
         return None
+
     
     def check_task(self, task):
         '''Return code of task or raise ValueError.
@@ -238,6 +269,7 @@ class DataProcessor():
         else:
             raise ValueError
         return code
+
     
     def drop_last_row(self, df='time_df'):
         '''drop last row from selected dataframe'''
@@ -247,6 +279,7 @@ class DataProcessor():
             self.codes_df = self.codes_df[:-1]
         else:
             raise ValueError
+
         
     def upd_time_df(self, task, time):
         '''
@@ -258,24 +291,30 @@ class DataProcessor():
         
         path, task (see self.check_task) and time are strings.
         time is string representation of float.
+
+        Return tuple of new row's data
         '''
-        #input check block
         code = self.check_task(task)
         time = float(time)
-
         date = dt.datetime.today().strftime('%Y-%m-%d')
+
         self.load_data(preprocessing=False)
+
         last_row = self.time_df.iloc[-1]
+
+        #preprocessing to update existing row
         if date == last_row.date:
             action = 'updated'
             last_row_ratios = map(float, last_row.ratios.split())
             last_row_tasks = last_row.tasks.split()
             weighted_time = [last_row.total * ratio for 
                              ratio in last_row_ratios]
+
             if code in last_row_tasks:
                 idx = last_row_tasks.index(code)
                 weighted_time[idx] += time
                 tasks = ' '.join(last_row_tasks)
+
             else:
                 weighted_time.append(time)
                 tasks = last_row.tasks + ' ' + code
@@ -283,18 +322,22 @@ class DataProcessor():
             ratios = ' '.join([str(round(time/total, 2)) for
                                time in weighted_time])
             self.drop_last_row(df='time_df')
+
+        #preprocessing to add new row
         else:
             action = 'added'
             total = time
             ratios = '1.0'
             tasks = code
+            
         self.time_df.loc[self.time_df.shape[0]] = (date,
                                                    tasks,
                                                    ratios,
                                                    total)
         self.save_data(preprocessing=False)
         return (date, tasks, ratios, total, action)
-            
+
+
     def upd_codes_df(self, task, code, priority):
         '''
         Load data without time_df preprocessing,
@@ -306,7 +349,7 @@ class DataProcessor():
         
         Be careful with input. Checking only priority.
         '''
-        #input check block
+
         priority = float(priority)
 
         self.load_data(preprocessing=False)
@@ -314,9 +357,11 @@ class DataProcessor():
                                                      code,
                                                      priority)
         self.save_data(preprocessing=False)
-            
+
+    
     def normalize(self, series):
         return series/series.sum()
+
             
     def make_recommendation(self):
         '''
@@ -325,8 +370,8 @@ class DataProcessor():
         
         Need numpy as np
         '''
-        predict_base = self.summary_df[self.get_end_codes(
-            self.summary_df.code)].loc[:,['task', 'rang']]
+        predict_base = self.summary_df[self.get_end_codes()
+                                       ].loc[:,['task', 'rang']]
         predict_base.rang = self.normalize(predict_base.rang)
         return np.random.choice(predict_base.task, size=1,
                          replace=False, p=predict_base.rang)[0]
