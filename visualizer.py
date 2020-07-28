@@ -170,7 +170,7 @@ class Visualizer():
         Histogramm of end tasks tree summary hours.
         Need self.summary_df pandas.DataFrame (!).
         '''
-        mask = self.get_end_codes(self.summary_df.code)
+        mask = self.get_end_codes()
         plt.bar(self.summary_df.task[mask],
                 self.summary_df[mask].total_time)
         plt.gcf().autofmt_xdate()
@@ -184,7 +184,7 @@ class Visualizer():
         Histogramm of end tasks tree hours per day.
         Need self.summary_df pandas.DataFrame (!).
         '''
-        mask = self.get_end_codes(self.summary_df.code)
+        mask = self.get_end_codes()
         plt.bar(self.summary_df.task[mask],
                 self.summary_df[mask].per_day)
         plt.gcf().autofmt_xdate()
